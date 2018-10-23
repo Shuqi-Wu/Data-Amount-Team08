@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 23 2018
+
+@author: Yifei Fang
+"""
 import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
