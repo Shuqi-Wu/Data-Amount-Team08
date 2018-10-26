@@ -10,9 +10,10 @@ import matplotlib.pylab as plt
 import seaborn as sns
 
 def correlation(data):
+    data=data.iloc[:,0:3]
     corr=data.corr()
     plt.matshow(corr)
-    data2=data.drop(['salary status'], axis=1)
+    #data2=data.drop(['salary status'], axis=1)
     # Generate a mask for the upper triangle
     mask = np.zeros_like(corr, dtype=np.bool)
     mask[np.triu_indices_from(mask)] = True
@@ -32,8 +33,9 @@ def correlation(data):
 
 def main():
     
-    df = pd.read_csv('dataset1_formatted.csv',header=None,names=['age','fnlwgt','education','capital gain','capital loss','hours per week','salary status'])
-     
+    #df = pd.read_csv('dataset2_formatted.csv',header=None,names=['ClusterID', 'Game mode', 'Game type'])
+    df = pd.read_csv('dataset2_formatted.csv',header=None,names=['ClusterID', 'Game mode', 'Game type'])
+   
     # plot the correlation
     a = correlation(df)
 
