@@ -42,16 +42,6 @@ def main():
         ax.set_title('Beijing PM2.5 Data Data Set')
         fig.savefig('visualization/scatter %s.png'%a[i])
 
-     # plot each scatters of data
-    fig, ax = plt.subplots(figsize=(12, 8))
-    for i in range(len(a)):
-        ax.scatter(X[i], y, alpha=0.5, label=a[i])
-        ax.set_xlabel('X')
-        ax.set_ylabel('PM2.5')
-        ax.set_title('Beijing PM2.5 Data Data Set')
-        fig.savefig('visualization/scatter %s.png' % a[i])
-
-
 
 if __name__ == '__main__':
     main()
