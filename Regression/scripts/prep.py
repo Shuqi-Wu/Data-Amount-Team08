@@ -10,11 +10,13 @@ import matplotlib.pylab as plt
 
 
 def correlation(data1):
+    #remove the predict column for correlation problem
     data2 = data1.drop(['pm2.5'], axis=1)
     m = ['y', 'm', 'd', 'h', 'D', 'T', 'P', 'Iws', 'Is', 'Ir']
     a = data2.columns
     cor = data2.corr()
     plt.matshow(cor)
+    #assign the lable of X with short letters and Y with origin columns
     plt.xticks(range(len(a)), m)
     plt.yticks(range(len(a)), a)
     plt.colorbar()
@@ -41,16 +43,6 @@ def main():
         ax.set_ylabel('PM2.5')
         ax.set_title('Beijing PM2.5 Data Data Set')
         fig.savefig('visualization/scatter %s.png'%a[i])
-
-     # plot each scatters of data
-    fig, ax = plt.subplots(figsize=(12, 8))
-    for i in range(len(a)):
-        ax.scatter(X[i], y, alpha=0.5, label=a[i])
-        ax.set_xlabel('X')
-        ax.set_ylabel('PM2.5')
-        ax.set_title('Beijing PM2.5 Data Data Set')
-        fig.savefig('visualization/scatter %s.png' % a[i])
-
 
 
 if __name__ == '__main__':
