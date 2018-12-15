@@ -8,8 +8,10 @@ import os
 import pandas
 import argparse
 import warnings
+import numpy as np
 import matplotlib.pylab as plt
 from sklearn import model_selection
+from sklearn import preprocessing
 from sklearn.linear_model import LogisticRegression
 
 warnings.filterwarnings("ignore")
@@ -28,20 +30,28 @@ def save_plot(fig,filename,save_to_dir=OUTPUT_DIR):
     output_filepath = os.path.join(save_to_dir,filename)
     fig.savefig('%s.png'%output_filepath)
 
-def main(dataset_path,intervals,cv_scheme):
+def main(dataset_path,intervals,cv_scheme,cols_to_normalize=None):
 
-    dataset_filename = os.path.basename(dataset_path).split('.')[0]
-    ds_output = os.path.join(OUTPUT_DIR,dataset_filename)
+    outfolder_name = os.path.basename(os.path.abspath(os.path.join(dataset_path,
+                                                                   os.pardir)))
+    ds_output = os.path.join(OUTPUT_DIR,outfolder_name)
     if not os.path.exists(ds_output):
         os.makedirs(ds_output)
 
     df = pandas.read_csv(dataset_path)
-    array = df.values
+    array = df.values.astype(np.float)
     num_data_pts = len(array)
     step = int(num_data_pts/intervals)
-
     train_sizes = list(range(step,num_data_pts,step))
     X=array[:,:-1]
+
+    if cols_to_normalize is not None:
+        min_max_scaler = preprocessing.MinMaxScaler()
+        for col_number in cols_to_normalize:
+            col_unscaled = X[:,col_number]
+            col_scaled = min_max_scaler.fit_transform(col_unscaled.reshape(-1,1))
+            X[:,col_number] = col_scaled.reshape(1,-1)
+
     y=array[:,-1]
     scoring = {'acc': 'accuracy',
                'n_loss':'neg_log_loss',
@@ -90,6 +100,8 @@ if __name__=='__main__':
     parser.add_argument('--dset_path', type=str,help='Absolute path to the FORMATTED dataset')
     parser.add_argument('--intervals', type=int,help='How many intervals to divide the dataset into')
     parser.add_argument('--xy_split', action='store_true')
+    parser.add_argument('--cols_to_normalize', type=str,help='Comma separated list of'\
+                        ' column numbers to normalize to -1 to 1 range')
     parser.add_argument('--kfolds', action='store_true')
 
     args = parser.parse_args()
@@ -106,6 +118,9 @@ if __name__=='__main__':
         if args.intervals < 4:
             raise Exception('Intervals cannot be less than 4')
 
+    if args.cols_to_normalize:
+        args.cols_to_normalize = [int(x) for x in args.cols_to_normalize.split(',')]
+
     if args.xy_split and args.kfolds:
         raise Exception('Only a single cross validation scheme can be specified ata  time')
     elif not args.xy_split and not args.kfolds:
@@ -121,4 +136,4 @@ if __name__=='__main__':
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
-    main(args.dset_path,args.intervals,cv_scheme)
+    main(args.dset_path,args.intervals,cv_scheme,cols_to_normalize=args.cols_to_normalize)
