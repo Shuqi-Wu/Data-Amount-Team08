@@ -25,7 +25,7 @@ def normalized(X):
 
 def confidence(prediction):
     # confidence intervals of samples
-    # z_critical = stats.norm.ppf(q=0.95)  # Get the z-critical value*
+    # cofidence level = 95%, z-critical value = 1.96*
     z = 1.96
     sd = prediction.std()
     mean = prediction.mean()
