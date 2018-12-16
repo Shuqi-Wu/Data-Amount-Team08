@@ -5,6 +5,7 @@ Created on Oct 19, 2018
 
 '''
 import os
+import math
 import pandas
 import argparse
 import warnings
@@ -55,20 +56,26 @@ def main(dataset_path,intervals,cv_scheme,cols_to_normalize=None):
     y=array[:,-1]
     scoring = {'acc': 'accuracy',
                'n_loss':'neg_log_loss',
-               'msqerr':'neg_mean_squared_error',
-               'r2':'r2'}
+               'precision':'precision',
+               'recall':'recall',
+               'roc_auc':'roc_auc'}
 
     accuracy = []
     neg_log_loss = []
-    neg_mean_sq_err = []
-    r2 = []
+    precision = []
+    recall = []
+    roc_auc = []
+    c_intervals = []
     train_sizes_X = []
-
+    test_sizes_X = []
+    z_95 = 1.96
     for train_size in train_sizes:
         model = LogisticRegression()
+        test_size = num_data_pts - train_size
+        #K-Fold disabled for now
         if cv_scheme == 0:
             cv_arg = model_selection.ShuffleSplit(n_splits=2,
-                        train_size=train_size, test_size=num_data_pts-train_size,
+                        train_size=train_size, test_size=test_size,
                         random_state=0)
         else:
             cv_arg = int(num_data_pts/train_size)
@@ -79,20 +86,34 @@ def main(dataset_path,intervals,cv_scheme,cols_to_normalize=None):
                                  cv=cv_arg, return_train_score=False)
 
         train_sizes_X.append(train_size)
+        test_sizes_X.append(test_size)
         neg_log_loss.append(scores['test_n_loss'].mean())
-        accuracy.append(scores['test_acc'].mean())
-        neg_mean_sq_err.append(scores['test_msqerr'].mean())
-        r2.append(scores['test_r2'].mean())
+        
+        acc = scores['test_acc'].mean()
+        error = 1 - acc
+        c_interval_len = 2 * z_95 * math.sqrt( (error * (1 - error)) / test_size)
+        accuracy.append(acc)
+        c_intervals.append(c_interval_len)
 
-    x_label = 'Number of Training samples'
-    p_acc = plot(train_sizes_X,accuracy,x_label=x_label,y_label='Accuracy')
-    p_lloss = plot(train_sizes_X,neg_log_loss,x_label=x_label,y_label='Negative Log Loss')
-    p_msq = plot(train_sizes_X,neg_mean_sq_err,x_label=x_label,y_label='Mean Squared Error')
-    p_r2 = plot(train_sizes_X,r2,x_label=x_label,y_label='R2')
+        precision.append(scores['test_precision'].mean())
+        roc_auc.append(scores['test_roc_auc'].mean())
+        recall.append(scores['test_recall'].mean())
+
+    train_label = 'Number of Training samples'
+    test_label = 'Number of Testing samples'
+    p_acc = plot(train_sizes_X[:780],accuracy[:780],x_label=train_label,y_label='Accuracy')
+    p_lloss = plot(train_sizes_X[:780],neg_log_loss[:780],x_label=train_label,y_label='Negative Log Loss')
+    p_precision = plot(train_sizes_X[:780],precision[:780],x_label=train_label,y_label='Precision')
+    p_roc_auc = plot(train_sizes_X[:780],roc_auc[:780],x_label=train_label,y_label='ROC Area Under curve')
+    p_recall = plot(train_sizes_X[:780],recall[:780],x_label=train_label,y_label='Recall')
+    p_c_inverval = plot(test_sizes_X[:780],c_intervals[:780],x_label=test_label,y_label='Length of 95% Confidence interval')
+
     save_plot(p_acc[0],'accuracy',ds_output)
     save_plot(p_lloss[0],'log_loss',ds_output)
-    save_plot(p_msq[0],'mean_squared',ds_output)
-    save_plot(p_r2[0],'r2',ds_output)
+    save_plot(p_precision[0],'precision',ds_output)
+    save_plot(p_roc_auc[0],'roc_auc',ds_output)
+    save_plot(p_recall[0],'recall',ds_output)
+    save_plot(p_c_inverval[0],'c_intervals',ds_output)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Argument parser of classification'\
