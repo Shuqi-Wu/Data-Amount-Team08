@@ -36,9 +36,8 @@ def confidence(prediction):
 
 def plot_confidence(Means,Intervals):
     fig, axs = plt.subplots(figsize=(18, 8))
-    # ax = axs[0, 0]
     axs.errorbar(np.arange(1, len(Means) + 1), Means, yerr=[(top - bot) / 2 for top, bot in Intervals], fmt='o')
-    axs.set_xlabel('Data Amount')
+    axs.set_xlabel('Iteration')
     axs.set_ylabel('Confidence Intervals')
     fig.savefig('Confidence Interval')
 
